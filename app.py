@@ -214,6 +214,45 @@ st.markdown("""
         box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
     }
     
+    /* Fix dropdown text visibility */
+    .stSelectbox label {
+        color: #2d3748 !important;
+        font-weight: 600 !important;
+        font-size: 1rem !important;
+        margin-bottom: 0.5rem !important;
+    }
+    
+    .stSelectbox [data-baseweb="select"] {
+        background-color: white !important;
+    }
+    
+    .stSelectbox [data-baseweb="select"] > div {
+        background-color: white !important;
+        color: #2d3748 !important;
+        font-size: 1rem !important;
+        padding: 0.75rem !important;
+    }
+    
+    /* Fix text input labels */
+    .stTextInput label, .stNumberInput label {
+        color: #2d3748 !important;
+        font-weight: 600 !important;
+        font-size: 1rem !important;
+        margin-bottom: 0.5rem !important;
+    }
+    
+    /* Expander text fix */
+    .streamlit-expanderHeader {
+        color: #2d3748 !important;
+        font-weight: 600 !important;
+    }
+    
+    /* Form labels */
+    label {
+        color: #2d3748 !important;
+        font-weight: 500 !important;
+    }
+    
     /* Dataframe styling */
     .dataframe {
         border-radius: 15px;
@@ -1352,6 +1391,55 @@ def admin_dashboard(conn):
             st.warning(f"⚠️ {low_stock} products have low stock (< 10 units)")
             low_stock_items = products[products['stock_quantity'] < 10][['name', 'stock_quantity', 'category_name']]
             st.dataframe(low_stock_items, use_container_width=True, hide_index=True)
+        
+        # Database Backup Section
+        st.markdown("---")
+        st.markdown("### 💾 Database Backup")
+        
+        col1, col2 = st.columns([2, 1])
+        
+        with col1:
+            st.info("📦 **Backup your database regularly to prevent data loss!**\n\n"
+                   "The backup includes all:\n"
+                   "- Products & Inventory\n"
+                   "- Categories\n"
+                   "- Transactions & Sales History\n"
+                   "- All system data")
+        
+        with col2:
+            if st.button("⬇️ Download Database Backup", type="primary", use_container_width=True):
+                try:
+                    import shutil
+                    from pathlib import Path
+                    
+                    # Database file path
+                    db_path = "pos_system.db"
+                    
+                    if Path(db_path).exists():
+                        # Read database file
+                        with open(db_path, 'rb') as f:
+                            db_data = f.read()
+                        
+                        # Create download button
+                        backup_filename = f"pos_backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}.db"
+                        
+                        st.download_button(
+                            label="💾 Click to Download",
+                            data=db_data,
+                            file_name=backup_filename,
+                            mime="application/octet-stream",
+                            use_container_width=True,
+                            key="db_download_btn"
+                        )
+                        
+                        st.success(f"✅ Backup ready! Click button above to download.")
+                    else:
+                        st.error("❌ Database file not found!")
+                        
+                except Exception as e:
+                    st.error(f"❌ Backup failed: {e}")
+            
+            st.caption("💡 Tip: Download backups daily or before major changes")
     
     with tab2:
         inventory_management(conn)
